@@ -24,11 +24,10 @@
 #include "tst_test.h"
 #include "getdents.h"
 
-#define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
-			 S_IXGRP|S_IROTH|S_IXOTH)
-#define TEST_DIR	"test_dir"
-
-char *TCID = "getdents02";
+#define DIR_MODE	0755
+#define MNTPOINT	"mntpoint"
+#define TEST_DIR	MNTPOINT "/test_dir"
+#define TEST_FILE	MNTPOINT "/test"
 
 static char *dirp;
 static size_t size;
@@ -63,8 +62,8 @@ static void setup(void)
 	size = tst_dirp_size();
 	dirp = tst_alloc(size);
 
-	fd = SAFE_OPEN(".", O_RDONLY);
-	fd_file = SAFE_OPEN("test", O_CREAT | O_RDWR, 0644);
+	fd = SAFE_OPEN(MNTPOINT, O_RDONLY);
+	fd_file = SAFE_OPEN(TEST_FILE, O_CREAT | O_RDWR, 0644);
 
 	dirp_bad = tst_get_bad_addr(NULL);
 
@@ -77,26 +76,18 @@ static void run(unsigned int i)
 {
 	struct tcase *tc = tcases + i;
 
-	TEST(tst_getdents(*tc->fd, *tc->dirp, *tc->size));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "getdents() returned %ld", TST_RET);
-		return;
-	}
-
-	if (TST_ERR == tc->exp_errno) {
-		tst_res(TPASS | TTERRNO, "getdents failed as expected");
-	} else if (errno == ENOSYS) {
-		tst_res(TCONF, "syscall not implemented");
-	} else {
-		tst_res(TFAIL | TTERRNO, "getdents failed unexpectedly");
-	}
+	TST_EXP_FAIL2(tst_getdents(*tc->fd, *tc->dirp, *tc->size),
+		      tc->exp_errno, "fd=%i dirp=%p size=%zu",
+		      *tc->fd, *tc->dirp, *tc->size);
 }
 
 static struct tst_test test = {
-	.needs_tmpdir = 1,
 	.test = run,
 	.setup = setup,
 	.tcnt = ARRAY_SIZE(tcases),
 	.test_variants = TEST_VARIANTS,
+	.needs_root = 1,
+	.all_filesystems = 1,
+	.mount_device = 1,
+	.mntpoint = MNTPOINT
 };

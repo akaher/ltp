@@ -188,6 +188,7 @@ ifneq ($(build),$(host))
 	$(error running tests on cross-compile build not supported)
 endif
 	$(call _test)
+	$(MAKE) test-shell-loader
 	$(MAKE) test-metadata
 
 test-c: lib-all
@@ -202,6 +203,12 @@ ifneq ($(build),$(host))
 endif
 	$(call _test,-s)
 
+test-shell-loader: lib-all
+ifneq ($(build),$(host))
+	$(error running tests on cross-compile build not supported)
+endif
+	$(top_srcdir)/testcases/lib/run_tests.sh -b $(abs_builddir)
+
 test-metadata: metadata-all
 	$(MAKE) -C $(abs_srcdir)/metadata test
 
@@ -210,9 +217,3 @@ test-metadata: metadata-all
 help:
 	@echo "Please read the Configuration section in $(top_srcdir)/INSTALL"
 	@exit 1
-
-## Menuconfig
-menuconfig:
-	@$(SHELL) "$(top_srcdir)/ltpmenu"
-
-## End misc targets.

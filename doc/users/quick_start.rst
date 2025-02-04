@@ -17,7 +17,7 @@ Basics requirements to build LTP are the following:
 
 .. code-block:: console
 
-   $ git clone https://github.com/linux-test-project/ltp.git
+   $ git clone --recurse-submodules https://github.com/linux-test-project/ltp.git
    $ cd ltp
    $ make autotools
    $ ./configure
@@ -53,6 +53,7 @@ generated first:
 
 .. code-block:: console
 
+   $ ./configure --with-open-posix-testsuite
    $ cd testcases/open_posix_testsuite/
    $ make generate-makefiles
    $ cd conformance/interfaces/foo
